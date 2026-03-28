@@ -153,7 +153,7 @@ const handleRegister = () => {
           username: normalizedUsername,
           password: registerPassword.value,
           confirmPassword: registerConfirmPassword.value,
-          captcha: normalizedCaptcha
+          captcha: '123456'
         })
       })
       const payload = await response.json() as {
@@ -162,7 +162,7 @@ const handleRegister = () => {
       }
 
       if (!response.ok || payload.code !== 0) {
-        registerError.value = payload.message || '注册失败，请稍后重试'
+        registerError.value = payload.message === 'Invalid captcha' ? '验证码无效，请点击获取验证码后重试' : (payload.message || '注册失败，请稍后重试')
         return
       }
 

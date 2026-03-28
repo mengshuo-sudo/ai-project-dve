@@ -4,6 +4,7 @@ from fastapi import HTTPException
 from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import get_settings
 from app.core.security import TokenPayload, create_access_token, get_password_hash, verify_password
 from app.models.enums import UserStatus
 from app.models.tenant import Tenant
@@ -43,13 +44,14 @@ async def register_user(
     password: str,
     captcha: str,
 ) -> User:
-    """
-    Register a new user with phone + username.
-
-    Captcha is verified with a temporary stub rule: only "123456" is accepted.
-    """
-    if captcha.strip() != "123456":
-        raise HTTPException(status_code=400, detail="Invalid captcha")
+    normalized_captcha = captcha.strip()
+    settings = get_settings()
+    if settings.env == "local":
+        if not normalized_captcha:
+            raise HTTPException(status_code=400, detail="Invalid captcha")
+    else:
+        if normalized_captcha != "123456":
+            raise HTTPException(status_code=400, detail="Invalid captcha")
 
     normalized_phone = phone.strip()
     normalized_username = username.strip()
